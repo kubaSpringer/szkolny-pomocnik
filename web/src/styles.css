@@ -1,0 +1,500 @@
+:root {
+  --bg: #fdf6ec;
+  --card: #ffffff;
+  --text: #2d2a32;
+  --muted: #7a7480;
+  --border: #ece4d8;
+  --primary: #7c5cff;
+  --primary-dark: #6244e8;
+  --green: #22b573;
+  --blue: #3b8beb;
+  --yellow: #f2b134;
+  --orange: #ff8a3d;
+  --red: #ef5a5a;
+  --radius: 18px;
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Nunito', system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 1.45;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1 {
+  font-size: 1.7rem;
+  margin: 0.2em 0 0.6em;
+}
+h2 {
+  font-size: 1.25rem;
+  margin: 0.3em 0;
+}
+
+.layout main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 20px 16px 60px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: var(--card);
+  border-bottom: 2px solid var(--border);
+  flex-wrap: wrap;
+}
+.logo {
+  font-weight: 800;
+  font-size: 1.15rem;
+}
+.topbar nav {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+}
+.topbar nav a {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.topbar nav a.active {
+  background: #efeaff;
+  color: var(--primary);
+}
+
+.card {
+  display: block;
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+button,
+.button {
+  display: inline-block;
+  font: inherit;
+  font-weight: 800;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 20px;
+  background: var(--primary);
+  color: white;
+  cursor: pointer;
+  transition: transform 0.08s, background 0.15s;
+}
+button:hover,
+.button:hover {
+  background: var(--primary-dark);
+}
+button:active {
+  transform: scale(0.97);
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+button.secondary {
+  background: #f1ecf9;
+  color: var(--primary);
+}
+button.secondary.danger {
+  color: var(--red);
+  background: #fdeeee;
+}
+button.good {
+  background: var(--green);
+}
+button.bad {
+  background: var(--orange);
+}
+button.link {
+  background: none;
+  color: var(--primary);
+  padding: 4px 0;
+}
+button.icon {
+  background: none;
+  color: var(--muted);
+  padding: 4px 8px;
+}
+button.icon:hover {
+  color: var(--red);
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.center-row {
+  justify-content: center;
+}
+.row-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.muted {
+  color: var(--muted);
+}
+.small {
+  font-size: 0.88rem;
+}
+.error {
+  color: var(--red);
+  font-weight: 700;
+}
+.success {
+  color: var(--green);
+  font-weight: 800;
+}
+.center {
+  text-align: center;
+  padding: 80px 16px;
+}
+.back {
+  display: inline-block;
+  color: var(--primary);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+/* Forms */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 700;
+}
+input,
+textarea {
+  font: inherit;
+  padding: 10px 14px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: #fffdf9;
+  width: 100%;
+}
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+input[type='checkbox'] {
+  width: 24px;
+  height: 24px;
+  accent-color: var(--green);
+  flex-shrink: 0;
+}
+.inline-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* Login */
+.login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.login-card {
+  text-align: center;
+  max-width: 380px;
+  width: 100%;
+  padding: 36px 24px;
+}
+.login-emoji {
+  font-size: 4rem;
+}
+.google-button {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  min-height: 44px;
+}
+
+/* Exam list */
+.exam-list {
+  display: flex;
+  flex-direction: column;
+}
+.exam-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: transform 0.1s, border-color 0.15s;
+}
+.exam-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+.exam-icon {
+  font-size: 2.2rem;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f6f1ff;
+  border-radius: 16px;
+  flex-shrink: 0;
+}
+.exam-icon.big {
+  font-size: 2.8rem;
+  width: 72px;
+  height: 72px;
+}
+.exam-main {
+  flex: 1;
+  min-width: 0;
+}
+.exam-subject {
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--primary);
+  letter-spacing: 0.03em;
+}
+.exam-title {
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+.badge {
+  font-weight: 800;
+  font-size: 0.9rem;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #eef6ff;
+  color: var(--blue);
+  white-space: nowrap;
+}
+.badge.soon {
+  background: #fff4e0;
+  color: #c07a00;
+}
+.badge.urgent {
+  background: #ffe7e7;
+  color: var(--red);
+}
+.badge.past {
+  background: #efeaff;
+  color: var(--primary);
+}
+.progress {
+  height: 8px;
+  background: #f0ebe2;
+  border-radius: 999px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+.progress-bar {
+  height: 100%;
+  background: var(--green);
+  border-radius: 999px;
+}
+
+.today {
+  background: #fffbe8;
+  border-color: #f6e3a3;
+}
+.today ul {
+  margin: 6px 0 0;
+  padding-left: 0;
+  list-style: none;
+}
+.today li {
+  padding: 4px 0;
+}
+.today a:hover {
+  color: var(--primary);
+}
+
+.empty {
+  text-align: center;
+}
+.big-emoji {
+  font-size: 3rem;
+}
+
+/* Exam page */
+.exam-header-top {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.exam-header-top > div:nth-child(2) {
+  flex: 1;
+}
+.exam-header h1 {
+  margin: 0;
+}
+.description {
+  white-space: pre-wrap;
+  background: #fbf8f3;
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+.grade-badge {
+  color: white;
+  font-weight: 800;
+  font-size: 1.5rem;
+  min-width: 56px;
+  height: 56px;
+  padding: 0 8px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.tasks,
+.flashcards {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0;
+}
+.tasks li,
+.flashcards li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--border);
+}
+.tasks label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  flex: 1;
+}
+.tasks li.done span {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+.flashcard-form {
+  margin-top: 12px;
+}
+
+.finish {
+  border-color: var(--primary);
+}
+.grades {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+.grade-choice {
+  background: white;
+  color: var(--text);
+  border: 2px solid var(--border);
+  min-width: 52px;
+  padding: 8px 10px;
+}
+.grade-choice:hover {
+  background: #f6f1ff;
+}
+.grade-choice.selected {
+  color: white;
+}
+
+/* Quiz */
+.quiz {
+  text-align: center;
+  border-color: var(--primary);
+}
+.quiz-question {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 24px 0;
+  white-space: pre-wrap;
+}
+.quiz-answer {
+  font-size: 1.3rem;
+  background: #ecfbf3;
+  color: #13794b;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 8px;
+  white-space: pre-wrap;
+}
+
+/* History */
+.averages {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+}
+.average {
+  display: flex;
+  justify-content: space-between;
+  background: #fbf8f3;
+  padding: 8px 12px;
+  border-radius: 12px;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.chip {
+  background: white;
+  color: var(--text);
+  border: 2px solid var(--border);
+  padding: 6px 14px;
+  font-weight: 700;
+}
+.chip:hover {
+  background: #f6f1ff;
+}
+.chip.selected {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+@media (max-width: 560px) {
+  body {
+    font-size: 16px;
+  }
+  .exam-card {
+    flex-wrap: wrap;
+  }
+  .exam-card .badge,
+  .exam-card .grade-badge {
+    margin-left: 70px;
+  }
+}
