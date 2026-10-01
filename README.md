@@ -1,6 +1,6 @@
 # 🎒 Szkolny Pomocnik
 
-A small app for a 4th-grade student. It keeps a list of the next exams (sprawdziany), helps to prepare for them, and keeps the history of passed exams with grades. The UI is in Polish.
+A small app for a 4th-grade student. It keeps a list of the next exams (sprawdziany), helps to prepare for them, and keeps the list of passed exams. The UI is in Polish.
 
 ## Features
 
