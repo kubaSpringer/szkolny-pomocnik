@@ -2,6 +2,7 @@ import { Router, type Request, type Response, type NextFunction } from 'express'
 import { OAuth2Client } from 'google-auth-library';
 import jwt from 'jsonwebtoken';
 import { pool } from './db';
+import { ensureStarterExams } from './starterExams';
 
 const COOKIE_NAME = 'session';
 const SESSION_DAYS = 30;
@@ -84,6 +85,7 @@ authRouter.post('/auth/google', async (req, res) => {
     [payload.sub, email, payload.given_name ?? payload.name ?? null, payload.picture ?? null],
   );
   const user = rows[0];
+  await ensureStarterExams(user.id);
 
   const token = jwt.sign({ uid: user.id }, sessionSecret, { expiresIn: `${SESSION_DAYS}d` });
   res.cookie(COOKIE_NAME, token, {
@@ -106,5 +108,7 @@ authRouter.get('/me', requireAuth, async (req, res) => {
     res.status(401).json({ error: 'Musisz się zalogować.' });
     return;
   }
+  // Users who logged in before the starter exams existed get them here.
+  await ensureStarterExams(rows[0].id);
   res.json(rows[0]);
 });

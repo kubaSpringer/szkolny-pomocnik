@@ -3,7 +3,7 @@ import { api, type ExamDetails } from '../api';
 import { ExamForm } from '../components/ExamForm';
 import { Quiz } from '../components/Quiz';
 import { navigate } from '../router';
-import { GRADES, daysLabel, daysUntil, formatDate, gradeColor, randomCheer, subjectIcon } from '../util';
+import { daysLabel, daysUntil, formatDate, randomCheer, subjectIcon } from '../util';
 
 export function ExamPage({ id }: { id: number }) {
   const [exam, setExam] = useState<ExamDetails | null>(null);
@@ -33,6 +33,17 @@ export function ExamPage({ id }: { id: number }) {
     await api.deleteExam(exam.id);
     navigate(isDone ? '/historia' : '/');
   };
+
+  if (quiz) {
+    return (
+      <div>
+        <div class="quiz-title">
+          {subjectIcon(exam.subject)} {exam.title}
+        </div>
+        <Quiz cards={exam.flashcards} onClose={() => setQuiz(false)} />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -66,11 +77,7 @@ export function ExamPage({ id }: { id: number }) {
                 {!isDone && days >= 0 && <b> · {daysLabel(days)}</b>}
               </div>
             </div>
-            {isDone && exam.grade && (
-              <div class="grade-badge" style={{ background: gradeColor(exam.grade) }}>
-                {exam.grade}
-              </div>
-            )}
+            {isDone && <div class="badge done">✅ Zaliczony</div>}
           </div>
           {exam.description && <p class="description">{exam.description}</p>}
           {isDone && exam.resultNote && <p class="description">💬 {exam.resultNote}</p>}
@@ -100,59 +107,40 @@ export function ExamPage({ id }: { id: number }) {
       {finishing && (
         <FinishForm
           onCancel={() => setFinishing(false)}
-          onSave={async (grade, note) => {
-            await api.finishExam(exam.id, grade, note);
+          onSave={async (note) => {
+            await api.finishExam(exam.id, note);
             setFinishing(false);
             await load();
           }}
         />
       )}
 
-      {quiz ? (
-        <Quiz cards={exam.flashcards} onClose={() => setQuiz(false)} />
-      ) : (
-        <>
-          <StudyPlan exam={exam} onChange={setExam} />
-          <Flashcards exam={exam} onChange={setExam} onStartQuiz={() => setQuiz(true)} />
-        </>
-      )}
+      <StudyPlan exam={exam} onChange={setExam} />
+      <Flashcards
+        exam={exam}
+        onChange={setExam}
+        onStartQuiz={() => {
+          setQuiz(true);
+          window.scrollTo(0, 0);
+        }}
+      />
     </div>
   );
 }
 
-function FinishForm({
-  onSave,
-  onCancel,
-}: {
-  onSave: (grade: string | null, note: string) => Promise<void>;
-  onCancel: () => void;
-}) {
-  const [grade, setGrade] = useState<string | null>(null);
+function FinishForm({ onSave, onCancel }: { onSave: (note: string) => Promise<void>; onCancel: () => void }) {
   const [note, setNote] = useState('');
 
   return (
     <div class="card finish">
       <h2>Jak poszło? 🤞</h2>
-      <p class="muted">Wybierz ocenę. Jeśli jeszcze jej nie znasz, zostaw puste i wpisz później.</p>
-      <div class="grades">
-        {GRADES.map((g) => (
-          <button
-            key={g}
-            type="button"
-            class={`grade-choice ${grade === g ? 'selected' : ''}`}
-            style={grade === g ? { background: gradeColor(g), borderColor: gradeColor(g) } : undefined}
-            onClick={() => setGrade(grade === g ? null : g)}
-          >
-            {g}
-          </button>
-        ))}
-      </div>
+      <p class="muted">Sprawdzian trafi do zakładki „Zaliczone”.</p>
       <label class="form">
-        Notatka (np. co było trudne)
+        Notatka (np. co było łatwe, a co trudne)
         <textarea rows={2} value={note} onInput={(e) => setNote(e.currentTarget.value)} />
       </label>
       <div class="row">
-        <button onClick={() => onSave(grade, note)}>Zapisz</button>
+        <button onClick={() => onSave(note)}>Zapisz</button>
         <button class="secondary" onClick={onCancel}>
           Anuluj
         </button>

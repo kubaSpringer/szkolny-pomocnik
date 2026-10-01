@@ -6,8 +6,6 @@ import { requireAuth } from './auth';
 export const examsRouter = Router();
 examsRouter.use(requireAuth);
 
-const GRADES = ['1', '1+', '2-', '2', '2+', '3-', '3', '3+', '4-', '4', '4+', '5-', '5', '5+', '6-', '6'] as const;
-
 const examInput = z.object({
   subject: z.string().trim().min(1).max(60),
   title: z.string().trim().min(1).max(200),
@@ -17,7 +15,7 @@ const examInput = z.object({
 
 const EXAM_COLUMNS = `
   e.id, e.subject, e.title, e.exam_date AS "examDate", e.description, e.status,
-  e.grade, e.result_note AS "resultNote", e.finished_at AS "finishedAt"`;
+  e.result_note AS "resultNote", e.finished_at AS "finishedAt"`;
 
 function badRequest(res: Response, error: z.ZodError): void {
   res.status(400).json({ error: 'Niepoprawne dane.', details: error.flatten() });
@@ -101,7 +99,6 @@ examsRouter.delete('/exams/:id', async (req, res) => {
 });
 
 const finishInput = z.object({
-  grade: z.enum(GRADES).nullable().default(null),
   resultNote: z.string().max(2000).default(''),
 });
 
@@ -109,10 +106,10 @@ examsRouter.post('/exams/:id/finish', async (req, res) => {
   const parsed = finishInput.safeParse(req.body);
   if (!parsed.success) return badRequest(res, parsed.error);
   const { rows } = await pool.query(
-    `UPDATE exams AS e SET status = 'done', grade = $3, result_note = $4, finished_at = now()
+    `UPDATE exams AS e SET status = 'done', result_note = $3, finished_at = now()
      WHERE e.id = $1 AND e.user_id = $2
      RETURNING ${EXAM_COLUMNS}`,
-    [parseId(req.params.id), req.userId, parsed.data.grade, parsed.data.resultNote],
+    [parseId(req.params.id), req.userId, parsed.data.resultNote],
   );
   if (!rows[0]) return void res.status(404).json({ error: 'Nie znaleziono sprawdzianu.' });
   res.json(rows[0]);
@@ -120,7 +117,7 @@ examsRouter.post('/exams/:id/finish', async (req, res) => {
 
 examsRouter.post('/exams/:id/reopen', async (req, res) => {
   const { rows } = await pool.query(
-    `UPDATE exams AS e SET status = 'upcoming', grade = NULL, result_note = NULL, finished_at = NULL
+    `UPDATE exams AS e SET status = 'upcoming', result_note = NULL, finished_at = NULL
      WHERE e.id = $1 AND e.user_id = $2
      RETURNING ${EXAM_COLUMNS}`,
     [parseId(req.params.id), req.userId],

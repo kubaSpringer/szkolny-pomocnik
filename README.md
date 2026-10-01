@@ -8,8 +8,9 @@ A small app for a 4th-grade student. It keeps a list of the next exams (sprawdzi
 - **Upcoming exams.** Each exam shows a countdown ("Jutro", "Za 3 dni") and a progress bar.
 - **"Na dziś" box.** It tells how many study-plan steps to do today, so that all steps are done before the exam day.
 - **Plan nauki.** A checklist of small study steps for each exam.
-- **Fiszki + quiz.** You add questions and answers. In the quiz, cards that you do not know come back later.
-- **Moje oceny.** Passed exams with grades (1–6 with +/-), a subject filter, and an approximate average.
+- **Fiszki + "Sprawdź się".** Each round asks 10 random cards, one time each. If the answer is a number, she types it and the app checks it. At the end, the app shows the % of correct answers, and she can repeat only the wrong questions.
+- **Starter exam.** Each new user gets "Matematyka – Tabliczka mnożenia" (8 study steps, 100 cards from 1 × 1 to 10 × 10), with the date 14 days from the first login. See `server/src/starterExams.ts`.
+- **Zaliczone.** The list of passed exams, with a note and a filter by subject.
 
 ## Stack
 
@@ -80,8 +81,8 @@ pg_dump "$DATABASE_URL" > backup-$(date +%F).sql
 
 | Table        | What it stores                                                        |
 | ------------ | --------------------------------------------------------------------- |
-| `users`      | Google account (`google_sub`, e-mail, name)                           |
-| `exams`      | subject, title, date, description, status `upcoming`/`done`, grade, note |
+| `users`      | Google account (`google_sub`, e-mail, name), `seeded_at`              |
+| `exams`      | subject, title, date, description, status `upcoming`/`done`, note     |
 | `prep_tasks` | study-plan steps for each exam                                        |
 | `flashcards` | question/answer pairs for each exam                                   |
 

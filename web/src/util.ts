@@ -12,26 +12,8 @@ export const SUBJECTS: Record<string, string> = {
   'Wychowanie fizyczne': '⚽',
 };
 
-export const GRADES = ['6', '6-', '5+', '5', '5-', '4+', '4', '4-', '3+', '3', '3-', '2+', '2', '2-', '1+', '1'];
-
 export function subjectIcon(subject: string): string {
   return SUBJECTS[subject] ?? '📚';
-}
-
-/** Polish school convention: "+" adds 0.5, "-" subtracts 0.25. */
-export function gradeValue(grade: string): number {
-  const base = parseInt(grade, 10);
-  if (grade.endsWith('+')) return base + 0.5;
-  if (grade.endsWith('-')) return base - 0.25;
-  return base;
-}
-
-export function gradeColor(grade: string): string {
-  const v = gradeValue(grade);
-  if (v >= 5) return 'var(--green)';
-  if (v >= 4) return 'var(--blue)';
-  if (v >= 3) return 'var(--yellow)';
-  return 'var(--red)';
 }
 
 export function todayIso(): string {

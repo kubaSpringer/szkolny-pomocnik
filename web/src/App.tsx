@@ -37,7 +37,7 @@ export function App() {
             Sprawdziany
           </a>
           <a href="#/historia" class={route.name === 'history' ? 'active' : ''}>
-            Moje oceny
+            Zaliczone
           </a>
         </nav>
         <button class="link" onClick={logout} title={user.email}>

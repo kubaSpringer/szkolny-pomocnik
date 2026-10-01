@@ -76,7 +76,7 @@ export function HomePage({ user }: { user: User }) {
                   </div>
                 )}
               </div>
-              <div class={`badge ${urgency}`}>{days < 0 ? 'Wpisz ocenę' : daysLabel(days)}</div>
+              <div class={`badge ${urgency}`}>{days < 0 ? 'Jak poszło?' : daysLabel(days)}</div>
             </a>
           );
         })}

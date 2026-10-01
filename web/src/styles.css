@@ -305,6 +305,10 @@ input[type='checkbox'] {
   background: #ffe7e7;
   color: var(--red);
 }
+.badge.done {
+  background: #ecfbf3;
+  color: #13794b;
+}
 .badge.past {
   background: #efeaff;
   color: var(--primary);
@@ -363,20 +367,6 @@ input[type='checkbox'] {
   border-radius: 12px;
   padding: 12px 14px;
 }
-.grade-badge {
-  color: white;
-  font-weight: 800;
-  font-size: 1.5rem;
-  min-width: 56px;
-  height: 56px;
-  padding: 0 8px;
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
 .tasks,
 .flashcards {
   list-style: none;
@@ -410,26 +400,6 @@ input[type='checkbox'] {
 .finish {
   border-color: var(--primary);
 }
-.grades {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 12px 0;
-}
-.grade-choice {
-  background: white;
-  color: var(--text);
-  border: 2px solid var(--border);
-  min-width: 52px;
-  padding: 8px 10px;
-}
-.grade-choice:hover {
-  background: #f6f1ff;
-}
-.grade-choice.selected {
-  color: white;
-}
-
 /* Quiz */
 .quiz {
   text-align: center;
@@ -451,19 +421,60 @@ input[type='checkbox'] {
   white-space: pre-wrap;
 }
 
-/* History */
-.averages {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 8px;
+.quiz-answer.wrong {
+  background: #fff1e6;
+  color: #b34d00;
 }
-.average {
+.quiz-title {
+  font-weight: 800;
+  font-size: 1.2rem;
+  margin-bottom: 12px;
+}
+.score {
+  font-size: 3.5rem;
+  font-weight: 800;
+  line-height: 1;
+  margin: 8px 0;
+}
+.score.perfect {
+  color: var(--green);
+}
+.score.good {
+  color: var(--blue);
+}
+.score.low {
+  color: var(--orange);
+}
+.failed-list {
+  text-align: left;
+  background: #fff8f0;
+  border-radius: 14px;
+  padding: 10px 16px;
+  margin: 12px 0;
+}
+.failed-list h3 {
+  margin: 4px 0;
+  font-size: 1rem;
+}
+.failed-list ul {
+  margin: 4px 0;
+  padding-left: 20px;
+  columns: 2;
+}
+.quiz-type {
   display: flex;
-  justify-content: space-between;
-  background: #fbf8f3;
-  padding: 8px 12px;
-  border-radius: 12px;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 8px;
 }
+.quiz-type input {
+  width: 140px;
+  font-size: 1.6rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+/* History */
 .chips {
   display: flex;
   flex-wrap: wrap;
@@ -493,8 +504,7 @@ input[type='checkbox'] {
   .exam-card {
     flex-wrap: wrap;
   }
-  .exam-card .badge,
-  .exam-card .grade-badge {
+  .exam-card .badge {
     margin-left: 70px;
   }
 }

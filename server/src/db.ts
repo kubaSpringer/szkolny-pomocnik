@@ -35,7 +35,6 @@ CREATE TABLE IF NOT EXISTS exams (
   exam_date    DATE NOT NULL,
   description  TEXT NOT NULL DEFAULT '',
   status       TEXT NOT NULL DEFAULT 'upcoming' CHECK (status IN ('upcoming', 'done')),
-  grade        TEXT,
   result_note  TEXT,
   finished_at  TIMESTAMPTZ,
   created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -59,6 +58,12 @@ CREATE TABLE IF NOT EXISTS flashcards (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS flashcards_exam_idx ON flashcards (exam_id);
+
+-- Grades were removed from the app.
+ALTER TABLE exams DROP COLUMN IF EXISTS grade;
+
+-- Set when the starter exams (see starterExams.ts) were added for the user.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS seeded_at TIMESTAMPTZ;
 `;
 
 export async function migrate(): Promise<void> {

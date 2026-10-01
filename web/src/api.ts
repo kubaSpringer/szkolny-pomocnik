@@ -12,7 +12,6 @@ export interface Exam {
   examDate: string;
   description: string;
   status: 'upcoming' | 'done';
-  grade: string | null;
   resultNote: string | null;
   finishedAt: string | null;
 }
@@ -79,8 +78,7 @@ export const api = {
   createExam: (input: ExamInput) => request<Exam>('POST', '/exams', input),
   updateExam: (id: number, input: ExamInput) => request<Exam>('PATCH', `/exams/${id}`, input),
   deleteExam: (id: number) => request('DELETE', `/exams/${id}`),
-  finishExam: (id: number, grade: string | null, resultNote: string) =>
-    request<Exam>('POST', `/exams/${id}/finish`, { grade, resultNote }),
+  finishExam: (id: number, resultNote: string) => request<Exam>('POST', `/exams/${id}/finish`, { resultNote }),
   reopenExam: (id: number) => request<Exam>('POST', `/exams/${id}/reopen`),
 
   addTask: (examId: number, text: string) => request<PrepTask>('POST', `/exams/${examId}/tasks`, { text }),
