@@ -463,15 +463,36 @@ input[type='checkbox'] {
 }
 .quiz-type {
   display: flex;
-  gap: 10px;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   margin-bottom: 8px;
 }
+.quiz-type .row {
+  margin-top: 4px;
+}
 .quiz-type input {
-  width: 140px;
+  width: 160px;
   font-size: 1.6rem;
   font-weight: 800;
   text-align: center;
+}
+.quiz-type input.wide {
+  width: 100%;
+  max-width: 420px;
+  font-size: 1.2rem;
+}
+.quiz-type input::placeholder {
+  font-size: 1rem;
+  font-weight: 400;
+}
+.quiz-review {
+  background: #f6f1ff;
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-size: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 /* History */

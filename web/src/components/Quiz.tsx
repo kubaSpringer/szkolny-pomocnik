@@ -1,5 +1,15 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import type { Flashcard } from '../api';
+import { isCorrect, isMathAnswer, keyboardFor } from '../answers';
+
+/**
+ * input:   she types the answer
+ * correct: the answer matches
+ * wrong:   a math answer does not match (checked automatically)
+ * review:  a text answer does not match exactly; she decides if it was right
+ * unknown: she clicked "Nie wiem"
+ */
+type Phase = 'input' | 'correct' | 'wrong' | 'review' | 'unknown';
 
 const ROUND_SIZE = 10;
 
@@ -10,15 +20,6 @@ function shuffle<T>(items: T[]): T[] {
     [copy[i], copy[j]] = [copy[j], copy[i]];
   }
   return copy;
-}
-
-/** Cards with a number as the answer (e.g. "7 × 8 = ?") are answered by typing. */
-function isNumeric(answer: string): boolean {
-  return /^-?\d+([.,]\d+)?$/.test(answer.trim());
-}
-
-function normalize(value: string): string {
-  return value.trim().replace(',', '.').replace(/^0+(?=\d)/, '');
 }
 
 function scoreMessage(percent: number): string {
@@ -33,40 +34,37 @@ export function Quiz({ cards, onClose }: { cards: Flashcard[]; onClose: () => vo
   const [index, setIndex] = useState(0);
   const [failed, setFailed] = useState<Flashcard[]>([]);
   const [isRetake, setIsRetake] = useState(false);
-  const [showAnswer, setShowAnswer] = useState(false);
   const [typed, setTyped] = useState('');
-  const [checked, setChecked] = useState<boolean | null>(null);
+  const [phase, setPhase] = useState<Phase>('input');
   const inputRef = useRef<HTMLInputElement>(null);
 
   const current = round[index];
-  const typing = current ? isNumeric(current.answer) : false;
 
   useEffect(() => {
-    if (typing && checked === null) inputRef.current?.focus();
-  }, [index, checked, round]);
+    if (phase === 'input') inputRef.current?.focus();
+  }, [index, phase, round]);
 
   const start = (next: Flashcard[], retake: boolean) => {
     setRound(shuffle(next));
     setIndex(0);
     setFailed([]);
     setIsRetake(retake);
-    setShowAnswer(false);
     setTyped('');
-    setChecked(null);
+    setPhase('input');
   };
 
   const record = (correct: boolean) => {
     if (!correct) setFailed((f) => [...f, current]);
     setIndex((i) => i + 1);
-    setShowAnswer(false);
     setTyped('');
-    setChecked(null);
+    setPhase('input');
   };
 
   const check = (e: Event) => {
     e.preventDefault();
     if (!typed.trim()) return;
-    setChecked(normalize(typed) === normalize(current.answer));
+    if (isCorrect(typed, current.answer)) setPhase('correct');
+    else setPhase(isMathAnswer(current.answer) ? 'wrong' : 'review');
   };
 
   // ---------- Result screen ----------
@@ -88,7 +86,15 @@ export function Quiz({ cards, onClose }: { cards: Flashcard[]; onClose: () => vo
             <ul>
               {failed.map((card) => (
                 <li key={card.id}>
-                  {card.question.replace(/\s*=\s*\?\s*$/, '')} = <b>{card.answer}</b>
+                  {/=\s*\?\s*$/.test(card.question) ? (
+                    <>
+                      {card.question.replace(/\s*=\s*\?\s*$/, '')} = <b>{card.answer}</b>
+                    </>
+                  ) : (
+                    <>
+                      {card.question} → <b>{card.answer}</b>
+                    </>
+                  )}
                 </li>
               ))}
             </ul>
@@ -124,51 +130,71 @@ export function Quiz({ cards, onClose }: { cards: Flashcard[]; onClose: () => vo
       </div>
       <div class="quiz-question">{current.question}</div>
 
-      {typing ? (
-        checked !== null ? (
-          <>
-            {checked ? (
-              <div class="quiz-answer">✅ Dobrze! {current.answer}</div>
-            ) : (
-              <div class="quiz-answer wrong">
-                Prawie! Poprawna odpowiedź: <b>{current.answer}</b>
-              </div>
-            )}
-            <div class="row center-row">
-              <button autoFocus onClick={() => record(checked)}>
-                Dalej →
-              </button>
-            </div>
-          </>
-        ) : (
-          <form class="quiz-type" onSubmit={check}>
-            <input
-              ref={inputRef}
-              inputMode="numeric"
-              autoComplete="off"
-              value={typed}
-              onInput={(e) => setTyped(e.currentTarget.value)}
-              placeholder="?"
-            />
-            <button type="submit">Sprawdź</button>
-          </form>
-        )
-      ) : showAnswer ? (
+      {phase === 'input' && (
+        <form class="quiz-type" onSubmit={check}>
+          <input
+            ref={inputRef}
+            class={keyboardFor(current.answer) === 'text' ? 'wide' : ''}
+            inputMode={keyboardFor(current.answer)}
+            autoComplete="off"
+            autoCapitalize="off"
+            spellcheck={false}
+            value={typed}
+            onInput={(e) => setTyped(e.currentTarget.value)}
+            placeholder="Twoja odpowiedź"
+          />
+          <div class="row center-row">
+            <button type="submit" disabled={!typed.trim()}>
+              Sprawdź
+            </button>
+            <button type="button" class="secondary" onClick={() => setPhase('unknown')}>
+              Nie wiem
+            </button>
+          </div>
+        </form>
+      )}
+
+      {phase === 'correct' && <div class="quiz-answer">✅ Dobrze! {current.answer}</div>}
+      {phase === 'wrong' && (
+        <div class="quiz-answer wrong">
+          Prawie! Twoja odpowiedź: {typed}
+          <br />
+          Poprawna odpowiedź: <b>{current.answer}</b>
+        </div>
+      )}
+      {phase === 'unknown' && (
+        <div class="quiz-answer wrong">
+          Poprawna odpowiedź: <b>{current.answer}</b>
+        </div>
+      )}
+      {(phase === 'correct' || phase === 'wrong' || phase === 'unknown') && (
+        <div class="row center-row">
+          <button autoFocus onClick={() => record(phase === 'correct')}>
+            Dalej →
+          </button>
+        </div>
+      )}
+
+      {phase === 'review' && (
         <>
-          <div class="quiz-answer">{current.answer}</div>
+          <div class="quiz-review">
+            <div>
+              Twoja odpowiedź: <b>{typed}</b>
+            </div>
+            <div>
+              Poprawna odpowiedź: <b>{current.answer}</b>
+            </div>
+          </div>
+          <p class="muted small">Czy to znaczy to samo?</p>
           <div class="row center-row">
             <button class="good" onClick={() => record(true)}>
-              ✅ Umiem
+              ✅ Miałam dobrze
             </button>
             <button class="bad" onClick={() => record(false)}>
-              🔁 Jeszcze nie
+              ❌ Pomyłka
             </button>
           </div>
         </>
-      ) : (
-        <div class="row center-row">
-          <button onClick={() => setShowAnswer(true)}>Pokaż odpowiedź</button>
-        </div>
       )}
     </div>
   );
