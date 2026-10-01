@@ -1,12 +1,20 @@
 {
   "name": "szkolny-pomocnik",
   "private": true,
-  "workspaces": ["server", "web"],
-  "engines": { "node": ">=20" },
+  "workspaces": [
+    "server",
+    "web"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "dev": "yarn --cwd server dev & yarn --cwd web dev",
+    "dev": "concurrently -k -n api,web -c blue,magenta \"yarn --cwd server dev\" \"yarn --cwd web dev\"",
     "build": "yarn --cwd web build && yarn --cwd server build",
     "start": "yarn --cwd server start",
     "typecheck": "yarn --cwd server typecheck && yarn --cwd web typecheck"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
   }
 }
