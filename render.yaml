@@ -1,8 +1,11 @@
+# Web service only. The database is hosted on Neon (https://neon.tech).
 services:
   - type: web
     name: szkolny-pomocnik
     runtime: node
     plan: free
+    # Keep the app close to the Neon database (AWS eu-central-1 = Frankfurt).
+    region: frankfurt
     buildCommand: yarn install --frozen-lockfile --production=false && yarn build
     startCommand: yarn start
     healthCheckPath: /api/health
@@ -11,18 +14,12 @@ services:
         value: 22.14.0
       - key: NODE_ENV
         value: production
-      - key: DATABASE_URL
-        fromDatabase:
-          name: szkolny-pomocnik-db
-          property: connectionString
       - key: SESSION_SECRET
         generateValue: true
+      # Neon connection string (Neon console -> Connect), must include ?sslmode=require
+      - key: DATABASE_URL
+        sync: false
       - key: GOOGLE_CLIENT_ID
         sync: false
       - key: ALLOWED_EMAILS
         sync: false
-
-databases:
-  - name: szkolny-pomocnik-db
-    databaseName: szkolny_pomocnik
-    plan: basic-256mb

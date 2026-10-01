@@ -3,9 +3,18 @@ import { Pool, types } from 'pg';
 // Return DATE columns as plain 'YYYY-MM-DD' strings (no timezone shifts).
 types.setTypeParser(1082, (value) => value);
 
+// SSL comes from the connection string: Neon URLs carry `sslmode=require`, local URLs don't.
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
+  max: 5,
+  idleTimeoutMillis: 30_000,
+  connectionTimeoutMillis: 10_000,
+});
+
+// Neon suspends idle compute and closes its connections. Without this handler,
+// an error on an idle client would crash the process.
+pool.on('error', (err) => {
+  console.error('Idle database client error', err.message);
 });
 
 const schema = `
