@@ -425,6 +425,21 @@ input[type='checkbox'] {
   background: #fff1e6;
   color: #b34d00;
 }
+.paused {
+  color: var(--primary);
+  font-weight: 700;
+  margin-top: 2px;
+}
+.resume {
+  background: #f6f1ff;
+  border: 2px dashed var(--primary);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin: 8px 0;
+}
+.resume .row {
+  margin-top: 8px;
+}
 .quiz-title {
   font-weight: 800;
   font-size: 1.2rem;

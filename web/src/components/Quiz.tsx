@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import type { Flashcard } from '../api';
+import { api, type Flashcard, type QuizSession } from '../api';
 import { isCorrect, isMathAnswer, keyboardFor } from '../answers';
 
 /**
@@ -29,35 +29,97 @@ function scoreMessage(percent: number): string {
   return 'Nie poddawaj się! Powtórz błędne pytania. 🌱';
 }
 
-export function Quiz({ cards, onClose }: { cards: Flashcard[]; onClose: () => void }) {
-  const [round, setRound] = useState(() => shuffle(cards).slice(0, ROUND_SIZE));
-  const [index, setIndex] = useState(0);
-  const [failed, setFailed] = useState<Flashcard[]>([]);
-  const [isRetake, setIsRetake] = useState(false);
+interface RoundState {
+  round: Flashcard[];
+  index: number;
+  failed: Flashcard[];
+  isRetake: boolean;
+}
+
+function freshRound(cards: Flashcard[]): RoundState {
+  return { round: shuffle(cards).slice(0, ROUND_SIZE), index: 0, failed: [], isRetake: false };
+}
+
+/** Rebuilds a saved round. Cards deleted since the save are skipped. */
+function restore(session: QuizSession | null, cards: Flashcard[]): RoundState | null {
+  if (!session) return null;
+  const byId = new Map(cards.map((c) => [c.id, c]));
+  const pick = (ids: number[]) => ids.map((id) => byId.get(id)).filter((c): c is Flashcard => !!c);
+  const round = pick(session.round);
+  const index = pick(session.round.slice(0, session.index)).length;
+  if (index >= round.length) return null;
+  return { round, index, failed: pick(session.failed), isRetake: session.isRetake };
+}
+
+function toSession(state: RoundState): QuizSession {
+  return {
+    round: state.round.map((c) => c.id),
+    index: state.index,
+    failed: state.failed.map((c) => c.id),
+    isRetake: state.isRetake,
+  };
+}
+
+interface Props {
+  examId: number;
+  cards: Flashcard[];
+  /** A saved round to continue. When null, a new round starts. */
+  session: QuizSession | null;
+  onClose: () => void;
+}
+
+export function Quiz({ examId, cards, session, onClose }: Props) {
+  const [initial] = useState(() => restore(session, cards) ?? freshRound(cards));
+  const [round, setRound] = useState(initial.round);
+  const [index, setIndex] = useState(initial.index);
+  const [failed, setFailed] = useState<Flashcard[]>(initial.failed);
+  const [isRetake, setIsRetake] = useState(initial.isRetake);
   const [typed, setTyped] = useState('');
   const [phase, setPhase] = useState<Phase>('input');
   const inputRef = useRef<HTMLInputElement>(null);
+  // Saves run one after another, so an older save never overwrites a newer one.
+  const saving = useRef<Promise<unknown>>(Promise.resolve());
 
   const current = round[index];
+
+  const persist = (state: RoundState) => {
+    const finished = state.index >= state.round.length;
+    saving.current = saving.current
+      .then(() => (finished ? api.clearQuizSession(examId) : api.saveQuizSession(examId, toSession(state))))
+      .catch(() => {});
+  };
+
+  useEffect(() => {
+    if (!session) persist(initial);
+  }, []);
 
   useEffect(() => {
     if (phase === 'input') inputRef.current?.focus();
   }, [index, phase, round]);
 
+  const close = async () => {
+    await saving.current;
+    onClose();
+  };
+
   const start = (next: Flashcard[], retake: boolean) => {
-    setRound(shuffle(next));
+    const state: RoundState = { round: shuffle(next), index: 0, failed: [], isRetake: retake };
+    setRound(state.round);
     setIndex(0);
     setFailed([]);
     setIsRetake(retake);
     setTyped('');
     setPhase('input');
+    persist(state);
   };
 
   const record = (correct: boolean) => {
-    if (!correct) setFailed((f) => [...f, current]);
-    setIndex((i) => i + 1);
+    const nextFailed = correct ? failed : [...failed, current];
+    setFailed(nextFailed);
+    setIndex(index + 1);
     setTyped('');
     setPhase('input');
+    persist({ round, index: index + 1, failed: nextFailed, isRetake });
   };
 
   const check = (e: Event) => {
@@ -106,7 +168,7 @@ export function Quiz({ cards, onClose }: { cards: Flashcard[]; onClose: () => vo
           <button class={failed.length > 0 ? 'secondary' : ''} onClick={() => start(shuffle(cards).slice(0, ROUND_SIZE), false)}>
             Nowa runda
           </button>
-          <button class="secondary" onClick={onClose}>
+          <button class="secondary" onClick={close}>
             Zakończ
           </button>
         </div>
@@ -121,8 +183,8 @@ export function Quiz({ cards, onClose }: { cards: Flashcard[]; onClose: () => vo
         <span class="muted small">
           {isRetake ? 'Powtórka · ' : ''}Pytanie {index + 1} z {round.length}
         </span>
-        <button class="link" onClick={onClose}>
-          Zakończ
+        <button class="link" onClick={close} title="Możesz wrócić później do tego samego pytania">
+          ⏸ Przerwij
         </button>
       </div>
       <div class="progress">

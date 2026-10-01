@@ -9,6 +9,7 @@ A small app for a 4th-grade student. It keeps a list of the next exams (sprawdzi
 - **"Na dziś" box.** It tells how many study-plan steps to do today, so that all steps are done before the exam day.
 - **Plan nauki.** A checklist of small study steps for each exam.
 - **Fiszki + "Sprawdź się".** Each round asks 10 random cards, one time each. She types every answer. Math answers (whole numbers, decimals, fractions such as `3/4` or `1 1/2`) are checked automatically by value. Text answers are checked for an exact match (case and extra spaces do not count). If a text answer is different, she decides herself ("Miałam dobrze" / "Pomyłka"). "Nie wiem" shows the answer. At the end, the app shows the % of correct answers, and she can repeat only the wrong questions. The checking logic is in `web/src/answers.ts`.
+- **Pause and continue.** The quiz saves the progress after each answer (table `quiz_sessions`, one row per exam). After "⏸ Przerwij", a page reload, or on another device, she can click "▶ Kontynuuj" and continue from the same question. The home page shows "⏸ Przerwany test" on that exam.
 - **Starter exam.** Each new user gets "Matematyka – Tabliczka mnożenia" (8 study steps, 100 cards from 1 × 1 to 10 × 10), with the date 14 days from the first login. See `server/src/starterExams.ts`.
 - **Zaliczone.** The list of passed exams, with a note and a filter by subject.
 
@@ -85,5 +86,6 @@ pg_dump "$DATABASE_URL" > backup-$(date +%F).sql
 | `exams`      | subject, title, date, description, status `upcoming`/`done`, note     |
 | `prep_tasks` | study-plan steps for each exam                                        |
 | `flashcards` | question/answer pairs for each exam                                   |
+| `quiz_sessions` | the unfinished quiz round for each exam (card ids, position, wrong cards) |
 
 Each user sees only their own exams.

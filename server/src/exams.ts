@@ -40,7 +40,8 @@ examsRouter.get('/exams', async (req, res) => {
     `SELECT ${EXAM_COLUMNS},
        (SELECT count(*)::int FROM prep_tasks t WHERE t.exam_id = e.id) AS "tasksTotal",
        (SELECT count(*)::int FROM prep_tasks t WHERE t.exam_id = e.id AND t.done) AS "tasksDone",
-       (SELECT count(*)::int FROM flashcards f WHERE f.exam_id = e.id) AS "flashcardsTotal"
+       (SELECT count(*)::int FROM flashcards f WHERE f.exam_id = e.id) AS "flashcardsTotal",
+       EXISTS (SELECT 1 FROM quiz_sessions q WHERE q.exam_id = e.id) AS "quizPaused"
      FROM exams e
      WHERE e.user_id = $1 AND e.status = $2
      ORDER BY ${order}, e.id`,
@@ -71,11 +72,17 @@ examsRouter.get('/exams/:id', async (req, res) => {
   ]);
   if (!rows[0]) return void res.status(404).json({ error: 'Nie znaleziono sprawdzianu.' });
 
-  const [tasks, flashcards] = await Promise.all([
+  const [tasks, flashcards, quizSession] = await Promise.all([
     pool.query('SELECT id, text, done FROM prep_tasks WHERE exam_id = $1 ORDER BY id', [id]),
     pool.query('SELECT id, question, answer FROM flashcards WHERE exam_id = $1 ORDER BY id', [id]),
+    pool.query('SELECT state FROM quiz_sessions WHERE exam_id = $1', [id]),
   ]);
-  res.json({ ...rows[0], tasks: tasks.rows, flashcards: flashcards.rows });
+  res.json({
+    ...rows[0],
+    tasks: tasks.rows,
+    flashcards: flashcards.rows,
+    quizSession: quizSession.rows[0]?.state ?? null,
+  });
 });
 
 examsRouter.patch('/exams/:id', async (req, res) => {
@@ -187,6 +194,37 @@ examsRouter.post('/exams/:id/flashcards', async (req, res) => {
 
 examsRouter.delete('/flashcards/:id', async (req, res) => {
   await pool.query('DELETE FROM flashcards f USING exams e WHERE f.id = $1 AND f.exam_id = e.id AND e.user_id = $2', [
+    parseId(req.params.id),
+    req.userId,
+  ]);
+  res.json({ ok: true });
+});
+
+// ---------- Quiz session (unfinished "Sprawdź się" round) ----------
+
+const cardIds = z.array(z.number().int().positive()).max(500);
+const quizSessionInput = z.object({
+  round: cardIds.min(1),
+  index: z.number().int().min(0),
+  failed: cardIds,
+  isRetake: z.boolean(),
+});
+
+examsRouter.put('/exams/:id/quiz-session', async (req, res) => {
+  const examId = parseId(req.params.id);
+  const parsed = quizSessionInput.safeParse(req.body);
+  if (!parsed.success) return badRequest(res, parsed.error);
+  if (!examId || !(await ownsExam(req.userId!, examId))) return void res.status(404).json({ error: 'Nie znaleziono.' });
+  await pool.query(
+    `INSERT INTO quiz_sessions (exam_id, state) VALUES ($1, $2)
+     ON CONFLICT (exam_id) DO UPDATE SET state = EXCLUDED.state, updated_at = now()`,
+    [examId, parsed.data],
+  );
+  res.json({ ok: true });
+});
+
+examsRouter.delete('/exams/:id/quiz-session', async (req, res) => {
+  await pool.query('DELETE FROM quiz_sessions q USING exams e WHERE q.exam_id = $1 AND q.exam_id = e.id AND e.user_id = $2', [
     parseId(req.params.id),
     req.userId,
   ]);

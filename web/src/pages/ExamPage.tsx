@@ -9,7 +9,7 @@ export function ExamPage({ id }: { id: number }) {
   const [exam, setExam] = useState<ExamDetails | null>(null);
   const [error, setError] = useState('');
   const [editing, setEditing] = useState(false);
-  const [quiz, setQuiz] = useState(false);
+  const [quiz, setQuiz] = useState<'new' | 'resume' | null>(null);
   const [finishing, setFinishing] = useState(false);
 
   const load = () =>
@@ -40,7 +40,15 @@ export function ExamPage({ id }: { id: number }) {
         <div class="quiz-title">
           {subjectIcon(exam.subject)} {exam.title}
         </div>
-        <Quiz cards={exam.flashcards} onClose={() => setQuiz(false)} />
+        <Quiz
+          examId={exam.id}
+          cards={exam.flashcards}
+          session={quiz === 'resume' ? exam.quizSession : null}
+          onClose={async () => {
+            await load();
+            setQuiz(null);
+          }}
+        />
       </div>
     );
   }
@@ -119,8 +127,8 @@ export function ExamPage({ id }: { id: number }) {
       <Flashcards
         exam={exam}
         onChange={setExam}
-        onStartQuiz={() => {
-          setQuiz(true);
+        onStartQuiz={(mode) => {
+          setQuiz(mode);
           window.scrollTo(0, 0);
         }}
       />
@@ -217,11 +225,13 @@ function Flashcards({
 }: {
   exam: ExamDetails;
   onChange: (exam: ExamDetails) => void;
-  onStartQuiz: () => void;
+  onStartQuiz: (mode: 'new' | 'resume') => void;
 }) {
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
   const [open, setOpen] = useState(false);
+  const session = exam.quizSession;
+  const resumable = session && session.index < session.round.length ? session : null;
 
   const add = async (e: Event) => {
     e.preventDefault();
@@ -241,8 +251,22 @@ function Flashcards({
     <section class="card">
       <div class="row-between">
         <h2>🃏 Fiszki</h2>
-        {exam.flashcards.length > 0 && <button onClick={onStartQuiz}>▶ Sprawdź się</button>}
+        {exam.flashcards.length > 0 && !resumable && <button onClick={() => onStartQuiz('new')}>▶ Sprawdź się</button>}
       </div>
+      {resumable && exam.flashcards.length > 0 && (
+        <div class="resume">
+          <span>
+            Przerwany test: pytanie <b>{resumable.index + 1}</b> z <b>{resumable.round.length}</b>
+            {resumable.isRetake ? ' (powtórka)' : ''}
+          </span>
+          <div class="row">
+            <button onClick={() => onStartQuiz('resume')}>▶ Kontynuuj</button>
+            <button class="secondary" onClick={() => onStartQuiz('new')}>
+              Nowa runda
+            </button>
+          </div>
+        </div>
+      )}
       {exam.flashcards.length === 0 && (
         <p class="muted">Dodaj pytania i odpowiedzi. Potem sprawdź, ile już umiesz!</p>
       )}

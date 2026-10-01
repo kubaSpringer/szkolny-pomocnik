@@ -70,6 +70,7 @@ export function HomePage({ user }: { user: User }) {
                 <div class="exam-subject">{exam.subject}</div>
                 <div class="exam-title">{exam.title}</div>
                 <div class="muted small">{formatDate(exam.examDate)}</div>
+                {exam.quizPaused && <div class="paused small">⏸ Przerwany test – kliknij, aby dokończyć</div>}
                 {exam.tasksTotal > 0 && (
                   <div class="progress" title={`${exam.tasksDone} z ${exam.tasksTotal}`}>
                     <div class="progress-bar" style={{ width: `${progress}%` }} />

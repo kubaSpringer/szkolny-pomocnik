@@ -59,6 +59,13 @@ CREATE TABLE IF NOT EXISTS flashcards (
 );
 CREATE INDEX IF NOT EXISTS flashcards_exam_idx ON flashcards (exam_id);
 
+-- Unfinished "Sprawdź się" round per exam, so it can be continued later (also on another device).
+CREATE TABLE IF NOT EXISTS quiz_sessions (
+  exam_id     INTEGER PRIMARY KEY REFERENCES exams(id) ON DELETE CASCADE,
+  state       JSONB NOT NULL,
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 -- Grades were removed from the app.
 ALTER TABLE exams DROP COLUMN IF EXISTS grade;
 

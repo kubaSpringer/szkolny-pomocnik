@@ -20,6 +20,7 @@ export interface ExamListItem extends Exam {
   tasksTotal: number;
   tasksDone: number;
   flashcardsTotal: number;
+  quizPaused: boolean;
 }
 
 export interface PrepTask {
@@ -34,9 +35,18 @@ export interface Flashcard {
   answer: string;
 }
 
+/** An unfinished quiz round, saved after each answer. Card ids refer to `flashcards`. */
+export interface QuizSession {
+  round: number[];
+  index: number;
+  failed: number[];
+  isRetake: boolean;
+}
+
 export interface ExamDetails extends Exam {
   tasks: PrepTask[];
   flashcards: Flashcard[];
+  quizSession: QuizSession | null;
 }
 
 export interface ExamInput {
@@ -88,4 +98,8 @@ export const api = {
   addFlashcard: (examId: number, question: string, answer: string) =>
     request<Flashcard>('POST', `/exams/${examId}/flashcards`, { question, answer }),
   deleteFlashcard: (id: number) => request('DELETE', `/flashcards/${id}`),
+
+  saveQuizSession: (examId: number, session: QuizSession) =>
+    request('PUT', `/exams/${examId}/quiz-session`, session),
+  clearQuizSession: (examId: number) => request('DELETE', `/exams/${examId}/quiz-session`),
 };
